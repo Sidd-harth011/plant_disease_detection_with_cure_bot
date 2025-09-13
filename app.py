@@ -22,11 +22,11 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-# Download/load class indices
-class_indices_path = hf_hub_download(
-    repo_id="sidd-harth011/checkingPDRMod",
-    filename="class_indices.json"
-)
+# -----------------------------
+# Load class indices locally from project repo
+# -----------------------------
+working_dir = os.path.dirname(os.path.abspath(__file__))
+class_indices_path = os.path.join(working_dir, "class_indices.json")
 class_indices = json.load(open(class_indices_path))
 
 # -----------------------------
