@@ -10,8 +10,8 @@ from huggingface_hub import hf_hub_download
 # -----------------------------
 # Load API key from Hugging Face Secrets
 # -----------------------------
-OPENAI_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+GROK_KEY = os.getenv("GROK_API_KEY")
+GROK_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 # -----------------------------
 # Load TFLite model from Hugging Face Hub
@@ -56,20 +56,20 @@ def predict_image_class(image):
 # -----------------------------
 # OpenAI Chatbot (single-turn, no history)
 # -----------------------------
-def openai_chatbot(user_message):
+def grok_chatbot(user_message):
     payload = {
-        "model": "gpt-4o-mini",  # ✅ lightweight, works in Spaces
+        "model": "openai/gpt-oss-20b",  # ✅ lightweight, works in Spaces
         "messages": [{"role": "user", "content": user_message}],
         "temperature": 0.7,
         "max_tokens": 500
     }
 
     headers = {
-        "Authorization": f"Bearer {OPENAI_KEY}",
+        "Authorization": f"Bearer {GROK_KEY}",
         "Content-Type": "application/json"
     }
 
-    response = requests.post(OPENAI_URL, headers=headers, json=payload)
+    response = requests.post(GROK_URL, headers=headers, json=payload)
 
     if response.status_code == 200:
         bot_message = response.json()["choices"][0]["message"]["content"]
@@ -103,7 +103,7 @@ with gr.Blocks(title="🌱 Plant Disease Classifier & AI Chatbot (OpenAI)") as d
             response_box = gr.Textbox(label="Bot Response", lines=5)
             send_btn = gr.Button("Send")
 
-            send_btn.click(openai_chatbot, inputs=msg, outputs=response_box)
+            send_btn.click(grok_chatbot, inputs=msg, outputs=response_box)
 
 if __name__ == "__main__":
     demo.launch()
