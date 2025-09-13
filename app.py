@@ -4,30 +4,32 @@ from PIL import Image
 import numpy as np
 import tensorflow as tf
 import gradio as gr
+import requests
 from huggingface_hub import hf_hub_download
 
 # -----------------------------
-# Download TFLite model from Hugging Face model repo
+# Load API key from Hugging Face Secrets
+# -----------------------------
+OPENAI_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+
+# -----------------------------
+# Load TFLite model from Hugging Face Hub
 # -----------------------------
 model_path = hf_hub_download(
-    repo_id="sidd-harth011/checkingPDRMod",  # your model repo
+    repo_id="sidd-harth011/checkingPDRMod",  # ✅ your repo
     filename="plant_disease_model.tflite"
 )
 
-# Load TFLite model
 interpreter = tf.lite.Interpreter(model_path=model_path)
 interpreter.allocate_tensors()
-
-# Get input and output details
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
 # -----------------------------
-# Load class indices locally from project repo
+# Load class indices (local file in repo)
 # -----------------------------
-working_dir = os.path.dirname(os.path.abspath(__file__))
-class_indices_path = os.path.join(working_dir, "class_indices.json")
-class_indices = json.load(open(class_indices_path))
+class_indices = json.load(open("class_indices.json"))
 
 # -----------------------------
 # Preprocessing function
@@ -52,15 +54,56 @@ def predict_image_class(image):
     return f"Prediction: {predicted_class_name}"
 
 # -----------------------------
+# OpenAI Chatbot (single-turn, no history)
+# -----------------------------
+def openai_chatbot(user_message):
+    payload = {
+        "model": "gpt-4o-mini",  # ✅ lightweight, works in Spaces
+        "messages": [{"role": "user", "content": user_message}],
+        "temperature": 0.7,
+        "max_tokens": 500
+    }
+
+    headers = {
+        "Authorization": f"Bearer {OPENAI_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(OPENAI_URL, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        bot_message = response.json()["choices"][0]["message"]["content"]
+    else:
+        print("Error:", response.status_code, response.text)
+        bot_message = "⚠️ Sorry, I couldn't process that. Try again!"
+
+    return bot_message
+
+# -----------------------------
 # Gradio Interface
 # -----------------------------
-interface = gr.Interface(
-    fn=predict_image_class,
-    inputs=gr.Image(type="pil", label="Upload an Image"),
-    outputs=gr.Textbox(label="Prediction"),
-    title="🌱 Plant Disease Classifier (TFLite)",
-    description="Upload a plant leaf image to classify its disease using a compressed TFLite model hosted on Hugging Face."
-)
+with gr.Blocks(title="🌱 Plant Disease Classifier & AI Chatbot (OpenAI)") as demo:
+
+    gr.Markdown("## 🌱 Plant Disease Classifier with AI Assistant (OpenAI)")
+
+    with gr.Row():
+        # Left: Plant classifier
+        with gr.Column(scale=1):
+            gr.Markdown("### Upload Image")
+            image_input = gr.Image(type="pil", label="Upload a Plant Leaf Image")
+            predict_button = gr.Button("Classify")
+            prediction_output = gr.Textbox(label="Prediction")
+
+            predict_button.click(fn=predict_image_class, inputs=image_input, outputs=prediction_output)
+
+        # Right: AI Chatbot
+        with gr.Column(scale=1):
+            gr.Markdown("### 🤖 AI Chatbot")
+            msg = gr.Textbox(label="Type your message")
+            response_box = gr.Textbox(label="Bot Response", lines=5)
+            send_btn = gr.Button("Send")
+
+            send_btn.click(openai_chatbot, inputs=msg, outputs=response_box)
 
 if __name__ == "__main__":
-    interface.launch()
+    demo.launch()
