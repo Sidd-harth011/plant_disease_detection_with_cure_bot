@@ -7,7 +7,7 @@ import gradio as gr
 
 # Paths
 working_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = f"{working_dir}/plant_disease_model.tflite"
+model_path = f"{working_dir}/trained_model/plant_disease_model.tflite"
 
 # Load TFLite model
 interpreter = tf.lite.Interpreter(model_path=model_path)
