@@ -72,10 +72,6 @@ def grok_chatbot(user_message):
         "messages": [
         {
          "role": "system",
-         "content": "if any user prompt looks wrong then reply - i can't answer that ."
-         },
-        {
-         "role": "system",
          "content": "You are a helpful assistant specializing in plant disease diagnosis and treatment."
          },
          {
