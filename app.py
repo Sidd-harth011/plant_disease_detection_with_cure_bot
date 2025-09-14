@@ -41,6 +41,15 @@ def load_and_preprocess_image(image, target_size=(224, 224)):
     img_array = img_array / 255.0
     return img_array
 
+#-----------------------------
+# Function to give disease name only
+#-----------------------------
+
+def clean_label(label: str) -> str:
+    if "___" in label:
+        label = label.split("___")[-1]
+    return label.replace("_", " ").title()
+
 # -----------------------------
 # Prediction function
 # -----------------------------
@@ -51,6 +60,7 @@ def predict_image_class(image):
     predictions = interpreter.get_tensor(output_details[0]['index'])
     predicted_class_index = np.argmax(predictions, axis=1)[0]
     predicted_class_name = class_indices[str(predicted_class_index)]
+    predicted_class_name = clean_label(predicted_class_name)
     return f"Prediction: {predicted_class_name}"
 
 # -----------------------------
@@ -60,6 +70,10 @@ def grok_chatbot(user_message):
     payload = {
         "model": "openai/gpt-oss-20b",
         "messages": [
+        {
+         "role": "system",
+         "content": "if any user prompt looks wrong then reply - i can't answer that ."
+         },
         {
          "role": "system",
          "content": "You are a helpful assistant specializing in plant disease diagnosis and treatment."
