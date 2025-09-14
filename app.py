@@ -61,16 +61,17 @@ def grok_chatbot(user_message):
         "model": "openai/gpt-oss-20b",
         "messages": [
         {
-            "role": "system",
-            "content": (
-                "if answer can be given in short then give short answer. otherwise format it on the basis of below prompts and give answer. "
-                "Format your response in a clean, professional style. "
-                "Use short headings with clear spacing. "
-                "Use numbered or bulleted lists instead of large tables. "
-                "Highlight important points with emojis or concise labels, not asterisks. "
-                "Keep the layout visually easy to scan, like a guide or checklist."
-            )
-        },
+         "role": "system",
+         "content": "You are a helpful assistant specializing in plant disease diagnosis and treatment."
+         },
+         {
+         "role": "system",
+         "content": "When providing treatment advice, always recommend consulting a local agricultural expert or extension service for confirmation and additional guidance."
+         },
+         {
+         "role": "system",
+         "content": "Use bullet points for lists and keep responses concise and informative."
+         },
         {
             "role": "user",
             "content": f"{user_message}\n\n(Please answer in under 400 words.)"
