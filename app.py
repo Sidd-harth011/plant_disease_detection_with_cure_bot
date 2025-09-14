@@ -58,10 +58,26 @@ def predict_image_class(image):
 # -----------------------------
 def grok_chatbot(user_message):
     payload = {
-        "model": "openai/gpt-oss-20b",  # ✅ lightweight, works in Spaces
-        "messages": [{"role": "user", "content": user_message}],
+        "model": "openai/gpt-oss-20b",
+        "messages": [
+        {
+            "role": "system",
+            "content": (
+                "if answer can be given in short then give short answer. otherwise format it on the basis of below prompts and give answer. "
+                "Format your response in a clean, professional style. "
+                "Use short headings with clear spacing. "
+                "Use numbered or bulleted lists instead of large tables. "
+                "Highlight important points with emojis or concise labels, not asterisks. "
+                "Keep the layout visually easy to scan, like a guide or checklist."
+            )
+        },
+        {
+            "role": "user",
+            "content": f"{user_message}\n\n(Please answer in under 400 words.)"
+        }
+    ],
         "temperature": 0.7,
-        "max_tokens": 500
+        "max_tokens": 1000
     }
 
     headers = {

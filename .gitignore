@@ -1,3 +1,5 @@
 plant_disease_model.tflite
 .env
 app2.py
+themeCheck.py
+.gradio
